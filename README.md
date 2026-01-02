@@ -309,17 +309,35 @@ docker-compose exec postgres psql -U postgres -d taskmanager
 
 ### 3. Настройка переменных окружения
 
-Добавьте следующие переменные окружения в `docker-compose.yml` или в `.env` файл:
+Создайте файл `.env` в корне проекта с переменными окружения для OAuth2.
 
-```yaml
-environment:
-  - GOOGLE_CLIENT_ID=your-google-client-id
-  - GOOGLE_CLIENT_SECRET=your-google-client-secret
-  - YANDEX_CLIENT_ID=your-yandex-client-id
-  - YANDEX_CLIENT_SECRET=your-yandex-client-secret
+#### Автоматическое создание .env файла
+
+**Windows (PowerShell):**
+```powershell
+@"
+# OAuth2 Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+YANDEX_CLIENT_ID=your-yandex-client-id
+YANDEX_CLIENT_SECRET=your-yandex-client-secret
+"@ | Out-File -FilePath .env -Encoding utf8
 ```
 
-Или обновите `application.yml` и `application-docker.yml` напрямую (не рекомендуется для production).
+**Linux/Mac:**
+```bash
+cat > .env << 'EOF'
+# OAuth2 Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+YANDEX_CLIENT_ID=your-yandex-client-id
+YANDEX_CLIENT_SECRET=your-yandex-client-secret
+EOF
+```
+
+**Примечание:** Замените `your-google-client-id`, `your-google-client-secret`, `your-yandex-client-id` и `your-yandex-client-secret` на реальные значения из ваших OAuth2 приложений.
+
+**Важно:** Файл `.env` уже добавлен в `.gitignore` и не будет попадать в репозиторий. Не коммитьте реальные секреты в git!
 
 ### 4. Использование
 

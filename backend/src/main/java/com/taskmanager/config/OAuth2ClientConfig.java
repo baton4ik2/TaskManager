@@ -25,10 +25,10 @@ public class OAuth2ClientConfig {
         String clientSecret = System.getenv("YANDEX_CLIENT_SECRET");
         
         if (clientId == null || clientId.isEmpty() || clientId.equals("your-yandex-client-id")) {
-            clientId = "a84847c2fbc84658ad83d1c2e0b6e7a9";
+            throw new IllegalStateException("YANDEX_CLIENT_ID environment variable is required");
         }
         if (clientSecret == null || clientSecret.isEmpty() || clientSecret.equals("your-yandex-client-secret")) {
-            clientSecret = "37fc94b234374c1fac762ccc9c1fcbd6";
+            throw new IllegalStateException("YANDEX_CLIENT_SECRET environment variable is required");
         }
 
         return ClientRegistration.withRegistrationId("yandex")

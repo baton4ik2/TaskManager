@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: task-manager-backend
+  
+  datasource:
+    url: jdbc:postgresql://postgres:5432/taskmanager
+    username: ${POSTGRES_USER:postgres}
+    password: ${POSTGRES_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Liquibase управляет схемой
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+  
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: true
+    drop-first: false
+
+  # OAuth2 настройки
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:your-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:your-google-client-secret}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://localhost:8082/api/login/oauth2/code/google"
+          yandex:
+            client-id: ${YANDEX_CLIENT_ID:your-yandex-client-id}
+            client-secret: ${YANDEX_CLIENT_SECRET:your-yandex-client-secret}
+            scope:
+              - login:info
+              - login:email
+            redirect-uri: "http://localhost:8082/api/login/oauth2/code/yandex"
+            authorization-grant-type: authorization_code
+            client-name: Yandex
+        provider:
+          yandex:
+            authorization-uri: https://oauth.yandex.ru/authorize
+            token-uri: https://oauth.yandex.ru/token
+            user-info-uri: https://login.yandex.ru/info
+            user-name-attribute: login
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+# JWT настройки
+jwt:
+  secret: your-secret-key-change-in-production-min-256-bits
+  expiration: 86400000 # 24 часа в миллисекундах
+
+# CORS настройки
+cors:
+  allowed-origins: http://localhost:3001
+

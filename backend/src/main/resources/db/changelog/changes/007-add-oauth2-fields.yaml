@@ -1,0 +1,22 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-oauth2-fields
+      author: task-manager
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: oauth2_provider
+                  type: varchar(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: oauth2_id
+                  type: varchar(255)
+                  constraints:
+                    nullable: true
+        - addUniqueConstraint:
+            tableName: users
+            constraintName: uk_users_oauth2
+            columnNames: oauth2_provider, oauth2_id

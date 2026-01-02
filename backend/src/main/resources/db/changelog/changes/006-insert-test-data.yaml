@@ -1,0 +1,321 @@
+databaseChangeLog:
+  - changeSet:
+      id: 006-insert-test-data
+      author: task-manager
+      changes:
+        # Вставка тестовых пользователей
+        # Пароль для всех пользователей: "password"
+        - sql:
+            sql: |
+              INSERT INTO users (username, email, password, first_name, last_name, role, created_at, updated_at)
+              VALUES 
+                ('admin', 'admin@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Admin', 'User', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('john', 'john@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'John', 'Doe', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('jane', 'jane@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Jane', 'Smith', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+                ('bob', 'bob@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Bob', 'Johnson', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+              ON CONFLICT (username) DO NOTHING;
+            endDelimiter: ;
+
+        # Вставка тестовых проектов
+        - sql:
+            sql: |
+              INSERT INTO projects (name, description, key, owner_id, created_at, updated_at)
+              SELECT 
+                'Веб-приложение', 
+                'Разработка веб-приложения для управления задачами',
+                'WEB',
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM users u WHERE u.username = 'admin'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO projects (name, description, key, owner_id, created_at, updated_at)
+              SELECT 
+                'Мобильное приложение', 
+                'Разработка мобильного приложения для iOS и Android',
+                'MOBILE',
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM users u WHERE u.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO projects (name, description, key, owner_id, created_at, updated_at)
+              SELECT 
+                'API Backend', 
+                'Разработка REST API для интеграции с внешними системами',
+                'API',
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM users u WHERE u.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        # Добавление участников в проекты
+        - sql:
+            sql: |
+              INSERT INTO project_members (project_id, user_id)
+              SELECT p.id, u.id
+              FROM projects p, users u
+              WHERE p.key = 'WEB' AND u.username IN ('john', 'jane', 'bob')
+              ON CONFLICT DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO project_members (project_id, user_id)
+              SELECT p.id, u.id
+              FROM projects p, users u
+              WHERE p.key = 'MOBILE' AND u.username IN ('jane', 'bob')
+              ON CONFLICT DO NOTHING;
+            endDelimiter: ;
+
+        # Вставка тестовых задач для проекта WEB
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Настроить CI/CD pipeline',
+                'Настроить автоматическую сборку и деплой приложения через GitHub Actions',
+                'WEB-1',
+                'TASK',
+                'IN_PROGRESS',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить баг с авторизацией',
+                'Пользователи не могут войти в систему после обновления. Нужно проверить JWT токены.',
+                'WEB-2',
+                'BUG',
+                'TODO',
+                'CRITICAL',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить темную тему',
+                'Реализовать переключение между светлой и темной темой в интерфейсе',
+                'WEB-3',
+                'STORY',
+                'IN_REVIEW',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Оптимизировать производительность',
+                'Улучшить время загрузки страниц и оптимизировать запросы к базе данных',
+                'WEB-4',
+                'TASK',
+                'DONE',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        # Задачи для проекта MOBILE
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Создать дизайн экранов',
+                'Разработать UI/UX дизайн для основных экранов мобильного приложения',
+                'MOBILE-1',
+                'EPIC',
+                'IN_PROGRESS',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'MOBILE' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Настроить push-уведомления',
+                'Интегрировать Firebase Cloud Messaging для отправки push-уведомлений',
+                'MOBILE-2',
+                'TASK',
+                'TODO',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'MOBILE' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        # Задачи для проекта API
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить документацию API',
+                'Создать Swagger/OpenAPI документацию для всех endpoints',
+                'API-1',
+                'TASK',
+                'DONE',
+                'LOW',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'API' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Реализовать rate limiting',
+                'Добавить ограничение количества запросов для защиты от злоупотреблений',
+                'API-2',
+                'TASK',
+                'IN_PROGRESS',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'API' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        # Добавляем комментарии к задачам
+        - sql:
+            sql: |
+              INSERT INTO comments (content, task_id, author_id, created_at, updated_at)
+              SELECT 
+                'Начал работу над настройкой CI/CD. Создал базовый workflow файл.',
+                t.id,
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM tasks t
+              CROSS JOIN users u
+              WHERE t.key = 'WEB-1' AND u.username = 'john'
+              ON CONFLICT DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO comments (content, task_id, author_id, created_at, updated_at)
+              SELECT 
+                'Проблема воспроизводится на всех браузерах. Нужно проверить логи сервера.',
+                t.id,
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM tasks t
+              CROSS JOIN users u
+              WHERE t.key = 'WEB-2' AND u.username = 'jane'
+              ON CONFLICT DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO comments (content, task_id, author_id, created_at, updated_at)
+              SELECT 
+                'Дизайн готов, жду ревью от команды.',
+                t.id,
+                u.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM tasks t
+              CROSS JOIN users u
+              WHERE t.key = 'WEB-3' AND u.username = 'bob'
+              ON CONFLICT DO NOTHING;
+            endDelimiter: ;
+

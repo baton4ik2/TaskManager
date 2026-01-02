@@ -1,0 +1,16 @@
+# Dockerfile для разработки с hot reload
+FROM node:18-alpine
+WORKDIR /app
+
+# Копируем package.json и устанавливаем зависимости
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Копируем исходный код
+COPY . .
+
+EXPOSE 3001
+
+# Запускаем dev сервер
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+

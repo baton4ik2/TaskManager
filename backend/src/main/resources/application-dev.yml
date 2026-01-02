@@ -1,0 +1,41 @@
+# Конфигурация для локальной разработки с PostgreSQL
+spring:
+  application:
+    name: task-manager-backend
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/taskmanager
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate  # Liquibase управляет схемой
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        jdbc:
+          time_zone: UTC
+  
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
+    enabled: true
+    drop-first: false
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+# JWT настройки
+jwt:
+  secret: your-secret-key-change-in-production-min-256-bits
+  expiration: 86400000 # 24 часа в миллисекундах
+
+# CORS настройки
+cors:
+  allowed-origins: http://localhost:3001
+

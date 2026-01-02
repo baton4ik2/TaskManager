@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 005-create-project-members-table
+      author: task-manager
+      changes:
+        - createTable:
+            tableName: project_members
+            columns:
+              - column:
+                  name: project_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_project_members_project
+                    references: projects(id)
+                    onDelete: CASCADE
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_project_members_user
+                    references: users(id)
+                    onDelete: CASCADE
+        - addPrimaryKey:
+            tableName: project_members
+            columnNames: project_id, user_id
+            constraintName: pk_project_members
+        - createIndex:
+            indexName: idx_project_members_project_id
+            tableName: project_members
+            columns:
+              - column:
+                  name: project_id
+        - createIndex:
+            indexName: idx_project_members_user_id
+            tableName: project_members
+            columns:
+              - column:
+                  name: user_id
+

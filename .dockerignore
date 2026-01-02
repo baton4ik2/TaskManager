@@ -1,0 +1,31 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Node modules (для frontend)
+node_modules
+npm-debug.log
+
+# Build artifacts
+target/
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+

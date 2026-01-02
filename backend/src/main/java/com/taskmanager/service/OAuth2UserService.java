@@ -9,22 +9,28 @@ import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuth2UserService extends DefaultOAuth2UserService {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
+    // ThreadLocal для хранения пользователя в рамках одного запроса
+    private static final ThreadLocal<User> savedUser = new ThreadLocal<>();
+    
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oauth2User = super.loadUser(userRequest);
         String provider = userRequest.getClientRegistration().getRegistrationId();
         
         // Сохраняем или обновляем пользователя
-        processOAuth2User(provider, oauth2User);
+        User user = processOAuth2User(provider, oauth2User);
+        savedUser.set(user); // Сохраняем в ThreadLocal
         
         return oauth2User;
     }
@@ -35,17 +41,22 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
         String email = getEmail(provider, attributes);
         String name = getName(provider, attributes);
         
+        log.info("Processing OAuth2 user. Provider: {}, OAuth2Id: {}, Email: {}, Name: {}", provider, oauth2Id, email, name);
+        
         User user = userRepository.findByOauth2ProviderAndOauth2Id(provider, oauth2Id)
                 .orElseGet(() -> {
+                    log.info("User not found by OAuth2Id, checking by email: {}", email);
                     // Проверяем, существует ли пользователь с таким email
                     User existingUser = userRepository.findByEmail(email).orElse(null);
                     if (existingUser != null) {
+                        log.info("Found existing user by email, updating OAuth2 info");
                         // Обновляем существующего пользователя
                         existingUser.setOauth2Provider(provider);
                         existingUser.setOauth2Id(oauth2Id);
                         return existingUser;
                     }
                     
+                    log.info("Creating new user for OAuth2");
                     // Создаем нового пользователя
                     User newUser = new User();
                     newUser.setOauth2Provider(provider);
@@ -67,7 +78,9 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
                     return newUser;
                 });
         
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        log.info("User saved/updated. ID: {}, Username: {}, OAuth2Id: {}", savedUser.getId(), savedUser.getUsername(), savedUser.getOauth2Id());
+        return savedUser;
     }
 
     private String getOAuth2Id(String provider, Map<String, Object> attributes) {
@@ -163,10 +176,29 @@ public class OAuth2UserService extends DefaultOAuth2UserService {
     }
 
     public User getUserFromOAuth2(OAuth2User oauth2User, String provider) {
+        // Сначала пытаемся использовать сохраненного пользователя из loadUser
+        User user = savedUser.get();
+        if (user != null) {
+            log.info("Using saved user from ThreadLocal: {}", user.getUsername());
+            savedUser.remove(); // Очищаем ThreadLocal после использования
+            return user;
+        }
+        
+        // Если сохраненного пользователя нет, обрабатываем и сохраняем пользователя
+        log.info("User not found in ThreadLocal, processing OAuth2 user directly");
+        user = processOAuth2User(provider, oauth2User);
+        
+        // Проверяем, что пользователь действительно сохранен
         Map<String, Object> attributes = oauth2User.getAttributes();
         String oauth2Id = getOAuth2Id(provider, attributes);
+        User foundUser = userRepository.findByOauth2ProviderAndOauth2Id(provider, oauth2Id)
+                .orElseThrow(() -> {
+                    log.error("OAuth2 User not found after processing. Provider: {}, OAuth2Id: {}", provider, oauth2Id);
+                    log.error("Attributes: {}", attributes);
+                    return new RuntimeException("User not found after OAuth2 authentication. Provider: " + provider + ", OAuth2Id: " + oauth2Id);
+                });
         
-        return userRepository.findByOauth2ProviderAndOauth2Id(provider, oauth2Id)
-                .orElseThrow(() -> new RuntimeException("User not found after OAuth2 authentication"));
+        log.info("User found in database: ID={}, Username={}", foundUser.getId(), foundUser.getUsername());
+        return foundUser;
     }
 }

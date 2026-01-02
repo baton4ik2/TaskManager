@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { GoogleIcon, YandexIcon } from '../components/OAuthIcons'
+import { GoogleIcon } from '../components/OAuthIcons'
 import { AppIcon } from '../components/AppIcon'
 import '../App.css'
 
@@ -105,7 +105,8 @@ function Login() {
                 fontSize: '14px',
                 fontWeight: '500',
                 transition: 'all 0.2s ease',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                minWidth: '120px'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.15)';
@@ -119,38 +120,39 @@ function Login() {
               <GoogleIcon size={20} />
               <span>Google</span>
             </button>
-            <button
-              type="button"
-              onClick={() => window.location.href = '/api/oauth2/authorization/yandex'}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                backgroundColor: '#FC3F1D',
-                color: 'white',
-                border: 'none',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'all 0.2s ease',
-                boxShadow: '0 1px 3px rgba(252, 63, 29, 0.3)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#E6392A';
-                e.currentTarget.style.boxShadow = '0 2px 6px rgba(252, 63, 29, 0.4)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#FC3F1D';
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(252, 63, 29, 0.3)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-            >
-              <YandexIcon size={20} />
-              <span>Yandex</span>
-            </button>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = '/api/oauth2/authorization/yandex'}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    padding: '12px 20px',
+                    backgroundColor: '#FC3F1D',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 1px 3px rgba(252, 63, 29, 0.3)',
+                    minWidth: '120px'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#E6392A';
+                    e.currentTarget.style.boxShadow = '0 2px 6px rgba(252, 63, 29, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#FC3F1D';
+                    e.currentTarget.style.boxShadow = '0 1px 3px rgba(252, 63, 29, 0.3)';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  <span>Yandex</span>
+                </button>
           </div>
         </div>
       </div>

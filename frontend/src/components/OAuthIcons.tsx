@@ -1,4 +1,4 @@
-// Иконка Yandex - креативный дизайн с буквой "Я"
+// Иконка Yandex - оригинальный дизайн
 export const YandexIcon = ({ size = 24 }: { size?: number }) => (
   <svg
     width={size}
@@ -7,35 +7,14 @@ export const YandexIcon = ({ size = 24 }: { size?: number }) => (
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
-    {/* Основной круг с градиентом */}
-    <defs>
-      <linearGradient id="yandexGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FC3F1D" />
-        <stop offset="100%" stopColor="#E6392A" />
-      </linearGradient>
-    </defs>
-    <circle cx="12" cy="12" r="11" fill="url(#yandexGradient)" />
+    {/* Красный круг - оригинальный цвет Yandex #FC3F1D */}
+    <circle cx="12" cy="12" r="12" fill="#FC3F1D" />
     
-    {/* Стилизованная буква "Я" - более современный дизайн */}
+    {/* Буква "Я" - оригинальная форма Yandex */}
     <path
-      d="M7.5 6.5V17.5H6V6.5H7.5Z"
+      d="M7.5 6H9.5V10.5C9.5 11.3284 10.1716 12 11 12H12.5C13.3284 12 14 11.3284 14 10.5V6H16V17.5H14V11.5C14 11.2239 13.7761 11 13.5 11H11.5C11.2239 11 11 11.2239 11 11.5V17.5H7.5V6Z"
       fill="white"
     />
-    <path
-      d="M9.5 6.5V8.5H12C12.8284 8.5 13.5 9.17157 13.5 10C13.5 10.8284 12.8284 11.5 12 11.5H9.5V17.5H7.5V6.5H9.5Z"
-      fill="white"
-    />
-    <path
-      d="M12 10H9.5V11.5H12C12.2761 11.5 12.5 11.2761 12.5 11C12.5 10.7239 12.2761 10.5 12 10.5V10Z"
-      fill="url(#yandexGradient)"
-    />
-    
-    {/* Декоративные элементы - стилизованные точки как часть бренда */}
-    <circle cx="16.5" cy="8.5" r="1.2" fill="white" opacity="0.9" />
-    <circle cx="17.8" cy="10.2" r="0.8" fill="white" opacity="0.7" />
-    
-    {/* Дополнительный декоративный элемент - маленькая точка */}
-    <circle cx="18.5" cy="12.5" r="0.5" fill="white" opacity="0.5" />
   </svg>
 );
 

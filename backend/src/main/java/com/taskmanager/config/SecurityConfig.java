@@ -18,7 +18,9 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -54,6 +57,7 @@ public class SecurityConfig {
                                 .userService(oAuth2UserService)
                         )
                         .successHandler(oauth2SuccessHandler())
+                        .failureHandler(oauth2FailureHandler())
                         .redirectionEndpoint(redirection -> redirection
                                 .baseUri("/login/oauth2/code/*")
                         )
@@ -81,14 +85,19 @@ public class SecurityConfig {
             public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                                 Authentication authentication) throws IOException {
                 try {
+                    log.info("OAuth2 authentication success. Authentication type: {}", authentication.getClass().getName());
                     if (authentication instanceof OAuth2AuthenticationToken) {
                         OAuth2AuthenticationToken oauthToken = (OAuth2AuthenticationToken) authentication;
                         OAuth2User oauth2User = oauthToken.getPrincipal();
                         String provider = oauthToken.getAuthorizedClientRegistrationId();
                         
+                        log.info("OAuth2 provider: {}, User attributes: {}", provider, oauth2User.getAttributes().keySet());
+                        
                         // Получаем пользователя из базы данных
                         com.taskmanager.model.User user = oAuth2UserService.getUserFromOAuth2(oauth2User, provider);
                         String token = oAuth2UserService.generateJwtToken(user);
+                        
+                        log.info("OAuth2 user found/created: {}", user.getUsername());
                         
                         // Перенаправляем на frontend с токеном и информацией о пользователе
                         String frontendUrl = "http://localhost:3001/auth/callback?token=" + token 
@@ -97,13 +106,28 @@ public class SecurityConfig {
                             + "&role=" + java.net.URLEncoder.encode(user.getRole().name(), "UTF-8");
                         response.sendRedirect(frontendUrl);
                     } else {
-                        // Если это не OAuth2 аутентификация, перенаправляем на страницу входа
+                        log.warn("Authentication is not OAuth2AuthenticationToken: {}", authentication.getClass().getName());
                         response.sendRedirect("http://localhost:3001/login");
                     }
                 } catch (Exception e) {
-                    // В случае ошибки перенаправляем на страницу входа
-                    response.sendRedirect("http://localhost:3001/login?error=oauth2_failed");
+                    log.error("OAuth2 authentication success handler error", e);
+                    response.sendRedirect("http://localhost:3001/login?error=oauth2_failed&message=" + 
+                        java.net.URLEncoder.encode(e.getMessage(), "UTF-8"));
                 }
+            }
+        };
+    }
+
+    @Bean
+    public AuthenticationFailureHandler oauth2FailureHandler() {
+        return new AuthenticationFailureHandler() {
+            @Override
+            public void onAuthenticationFailure(HttpServletRequest request, HttpServletResponse response,
+                                                org.springframework.security.core.AuthenticationException exception) throws IOException {
+                log.error("OAuth2 authentication failure", exception);
+                String errorMessage = exception.getMessage() != null ? exception.getMessage() : "OAuth2 authentication failed";
+                response.sendRedirect("http://localhost:3001/login?error=oauth2_failed&message=" + 
+                    java.net.URLEncoder.encode(errorMessage, "UTF-8"));
             }
         };
     }

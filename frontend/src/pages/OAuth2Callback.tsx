@@ -1,13 +1,12 @@
 import { useEffect } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { authApi } from '../services/api'
 import '../App.css'
 
 function OAuth2Callback() {
   const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  const { setToken, setUser } = useAuth()
+  const { setToken } = useAuth()
 
   useEffect(() => {
     const token = searchParams.get('token')

@@ -51,21 +51,21 @@ public class OAuth2ClientConfig {
         String clientSecret = System.getenv("GOOGLE_CLIENT_SECRET");
         
         if (clientId == null || clientId.isEmpty() || clientId.equals("your-google-client-id")) {
-            clientId = "your-google-client-id";
+            throw new IllegalStateException("GOOGLE_CLIENT_ID environment variable is required");
         }
         if (clientSecret == null || clientSecret.isEmpty() || clientSecret.equals("your-google-client-secret")) {
-            clientSecret = "your-google-client-secret";
+            throw new IllegalStateException("GOOGLE_CLIENT_SECRET environment variable is required");
         }
 
         return ClientRegistration.withRegistrationId("google")
                 .clientId(clientId)
                 .clientSecret(clientSecret)
-                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)
+                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_POST)
                 .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("http://localhost:8082/api/login/oauth2/code/google")
                 .scope("openid", "profile", "email")
                 .authorizationUri("https://accounts.google.com/o/oauth2/v2/auth")
-                .tokenUri("https://www.googleapis.com/oauth2/v4/token")
+                .tokenUri("https://oauth2.googleapis.com/token")
                 .jwkSetUri("https://www.googleapis.com/oauth2/v3/certs")
                 .userInfoUri("https://www.googleapis.com/oauth2/v3/userinfo")
                 .userNameAttributeName(IdTokenClaimNames.SUB)

@@ -32,8 +32,10 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SERVER_PORT=8082
-      - YANDEX_CLIENT_ID=a84847c2fbc84658ad83d1c2e0b6e7a9
-      - YANDEX_CLIENT_SECRET=37fc94b234374c1fac762ccc9c1fcbd6
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - YANDEX_CLIENT_ID=${YANDEX_CLIENT_ID}
+      - YANDEX_CLIENT_SECRET=${YANDEX_CLIENT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy

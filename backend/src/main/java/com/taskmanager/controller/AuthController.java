@@ -33,7 +33,7 @@ public class AuthController {
     public ResponseEntity<AuthResponse> getCurrentUser(Authentication authentication) {
         User user = userRepository.findByUsername(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
-        return ResponseEntity.ok(new AuthResponse(null, user.getUsername(), user.getEmail(), user.getRole().name()));
+        return ResponseEntity.ok(new AuthResponse(null, user.getUsername(), user.getEmail(), user.getRole().name(), user.getId()));
     }
 }
 

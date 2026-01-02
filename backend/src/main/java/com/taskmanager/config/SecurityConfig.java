@@ -103,7 +103,8 @@ public class SecurityConfig {
                         String frontendUrl = "http://localhost:3001/auth/callback?token=" + token 
                             + "&username=" + java.net.URLEncoder.encode(user.getUsername(), "UTF-8")
                             + "&email=" + java.net.URLEncoder.encode(user.getEmail() != null ? user.getEmail() : "", "UTF-8")
-                            + "&role=" + java.net.URLEncoder.encode(user.getRole().name(), "UTF-8");
+                            + "&role=" + java.net.URLEncoder.encode(user.getRole().name(), "UTF-8")
+                            + "&userId=" + user.getId();
                         response.sendRedirect(frontendUrl);
                     } else {
                         log.warn("Authentication is not OAuth2AuthenticationToken: {}", authentication.getClass().getName());

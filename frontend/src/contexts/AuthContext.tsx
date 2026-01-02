@@ -5,6 +5,7 @@ interface User {
   username: string
   email: string
   role: string
+  userId?: number
 }
 
 interface AuthContextType {
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               username: userData.username,
               email: userData.email,
               role: userData.role,
+              userId: userData.userId,
             }
             setUser(user)
             localStorage.setItem('user', JSON.stringify(user))
@@ -68,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: response.username,
       email: response.email,
       role: response.role,
+      userId: response.userId,
     }
     setUser(userData)
     localStorage.setItem('token', response.token)
@@ -81,6 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: response.username,
       email: response.email,
       role: response.role,
+      userId: response.userId,
     }
     setUser(userData)
     localStorage.setItem('token', response.token)

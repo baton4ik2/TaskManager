@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { projectsApi, tasksApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useState } from 'react'
+import { KanbanBoard } from '../components/KanbanBoard'
+import { Task } from '../types/task'
 import '../App.css'
 
 function ProjectDetail() {
@@ -39,6 +41,18 @@ function ProjectDetail() {
     },
   })
 
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: number; status: Task['status'] }) =>
+      tasksApi.update(taskId, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', id] })
+    },
+  })
+
+  const handleTaskMove = (taskId: number, newStatus: Task['status']) => {
+    updateTaskStatusMutation.mutate({ taskId, status: newStatus })
+  }
+
   const handleCreateTask = (e: React.FormEvent) => {
     e.preventDefault()
     if (id) {
@@ -49,12 +63,6 @@ function ProjectDetail() {
     }
   }
 
-  const tasksByStatus = {
-    TODO: tasks?.filter((t: any) => t.status === 'TODO') || [],
-    IN_PROGRESS: tasks?.filter((t: any) => t.status === 'IN_PROGRESS') || [],
-    IN_REVIEW: tasks?.filter((t: any) => t.status === 'IN_REVIEW') || [],
-    DONE: tasks?.filter((t: any) => t.status === 'DONE') || [],
-  }
 
   if (projectLoading) return <div>Загрузка...</div>
   if (!project) return <div>Проект не найден</div>
@@ -147,34 +155,11 @@ function ProjectDetail() {
         {tasksLoading ? (
           <div>Загрузка...</div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '15px' }}>
-            {Object.entries(tasksByStatus).map(([status, statusTasks]: [string, any]) => (
-              <div key={status} className="card">
-                <h3 style={{ marginBottom: '15px', fontSize: '16px' }}>{status}</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  {statusTasks.map((task: any) => (
-                    <div
-                      key={task.id}
-                      style={{
-                        padding: '10px',
-                        background: '#f4f5f7',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                      }}
-                      onClick={() => navigate(`/tasks/${task.id}`)}
-                    >
-                      <div style={{ fontWeight: '500', marginBottom: '5px' }}>
-                        {task.key}: {task.title}
-                      </div>
-                      <div style={{ fontSize: '12px', color: '#6b778c' }}>
-                        {task.priority}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+          <KanbanBoard
+            tasks={tasks || []}
+            onTaskMove={handleTaskMove}
+            onTaskClick={(taskId) => navigate(`/tasks/${taskId}`)}
+          />
         )}
       </div>
     </div>

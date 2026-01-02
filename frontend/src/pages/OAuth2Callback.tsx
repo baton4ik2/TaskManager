@@ -18,12 +18,15 @@ function OAuth2Callback() {
       // Сохраняем токен в localStorage
       localStorage.setItem('token', token)
       
+      const userId = searchParams.get('userId')
+      
       // Если информация о пользователе передана в URL, используем её
       if (username && email && role) {
         const user = {
           username: decodeURIComponent(username),
           email: decodeURIComponent(email),
           role: decodeURIComponent(role),
+          userId: userId ? parseInt(userId, 10) : undefined,
         }
         // Сохраняем пользователя в localStorage
         localStorage.setItem('user', JSON.stringify(user))
@@ -42,6 +45,7 @@ function OAuth2Callback() {
               username: userData.username,
               email: userData.email,
               role: userData.role,
+              userId: userData.userId,
             }
             // Сохраняем пользователя в localStorage
             localStorage.setItem('user', JSON.stringify(user))

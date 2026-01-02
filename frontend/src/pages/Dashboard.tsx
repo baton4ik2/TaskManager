@@ -9,8 +9,9 @@ function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ['tasks'],
-    queryFn: () => tasksApi.getAll(),
+    queryKey: ['tasks', user?.userId],
+    queryFn: () => tasksApi.getAll(undefined, user?.userId),
+    enabled: !!user?.userId,
   })
 
   return (

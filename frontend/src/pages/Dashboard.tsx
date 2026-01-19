@@ -1,18 +1,33 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { tasksApi } from '../services/api'
 import { AppIcon } from '../components/AppIcon'
+import { KanbanBoard } from '../components/KanbanBoard'
+import { Task } from '../types/task'
 import '../App.css'
 
 function Dashboard() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+  
   const { data: tasks, isLoading } = useQuery({
-    queryKey: ['tasks', user?.userId],
-    queryFn: () => tasksApi.getAll(undefined, user?.userId),
-    enabled: !!user?.userId,
+    queryKey: ['tasks'],
+    queryFn: () => tasksApi.getAll(),
   })
+
+  const updateTaskStatusMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: number; status: Task['status'] }) =>
+      tasksApi.update(taskId, { status }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+    },
+  })
+
+  const handleTaskMove = (taskId: number, newStatus: Task['status']) => {
+    updateTaskStatusMutation.mutate({ taskId, status: newStatus })
+  }
 
   return (
     <div className="app">
@@ -31,9 +46,6 @@ function Dashboard() {
         </div>
         <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
           <span>Привет, {user?.username}!</span>
-          <button className="btn btn-secondary" onClick={() => navigate('/projects')}>
-            Проекты
-          </button>
           <button className="btn btn-secondary" onClick={logout}>
             Выход
           </button>
@@ -44,57 +56,11 @@ function Dashboard() {
         {isLoading ? (
           <div>Загрузка...</div>
         ) : (
-          <div>
-            {tasks && tasks.length > 0 ? (
-              <div style={{ display: 'grid', gap: '15px' }}>
-                {tasks.map((task: any) => (
-                  <div
-                    key={task.id}
-                    className="card"
-                    style={{ cursor: 'pointer' }}
-                    onClick={() => navigate(`/tasks/${task.id}`)}
-                  >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                      <div>
-                        <h3 style={{ marginBottom: '10px' }}>{task.key}: {task.title}</h3>
-                        <p style={{ color: '#6b778c', marginBottom: '10px' }}>{task.description}</p>
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                          <span style={{
-                            padding: '4px 8px',
-                            background: '#dfe1e6',
-                            borderRadius: '4px',
-                            fontSize: '12px'
-                          }}>
-                            {task.status}
-                          </span>
-                          <span style={{
-                            padding: '4px 8px',
-                            background: '#dfe1e6',
-                            borderRadius: '4px',
-                            fontSize: '12px'
-                          }}>
-                            {task.priority}
-                          </span>
-                          <span style={{
-                            padding: '4px 8px',
-                            background: '#dfe1e6',
-                            borderRadius: '4px',
-                            fontSize: '12px'
-                          }}>
-                            {task.projectName}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="card">
-                <p style={{ color: '#6b778c', textAlign: 'center' }}>Нет задач</p>
-              </div>
-            )}
-          </div>
+          <KanbanBoard
+            tasks={tasks || []}
+            onTaskMove={handleTaskMove}
+            onTaskClick={(taskId) => navigate(`/tasks/${taskId}`)}
+          />
         )}
       </div>
     </div>

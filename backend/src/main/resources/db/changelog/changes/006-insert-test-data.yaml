@@ -2,18 +2,20 @@ databaseChangeLog:
   - changeSet:
       id: 006-insert-test-data
       author: task-manager
+      runAlways: false
       changes:
         # Вставка тестовых пользователей
         # Пароль для всех пользователей: "password"
         - sql:
             sql: |
               INSERT INTO users (username, email, password, first_name, last_name, role, created_at, updated_at)
-              VALUES 
+              SELECT * FROM (VALUES 
                 ('admin', 'admin@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Admin', 'User', 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                 ('john', 'john@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'John', 'Doe', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                 ('jane', 'jane@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Jane', 'Smith', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
                 ('bob', 'bob@taskmanager.com', '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'Bob', 'Johnson', 'USER', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-              ON CONFLICT (username) DO NOTHING;
+              ) AS v(username, email, password, first_name, last_name, role, created_at, updated_at)
+              WHERE NOT EXISTS (SELECT 1 FROM users WHERE users.username = v.username);
             endDelimiter: ;
 
         # Вставка тестовых проектов
@@ -27,8 +29,9 @@ databaseChangeLog:
                 u.id,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
-              FROM users u WHERE u.username = 'admin'
-              ON CONFLICT (key) DO NOTHING;
+              FROM users u 
+              WHERE u.username = 'admin'
+                AND NOT EXISTS (SELECT 1 FROM projects WHERE projects.key = 'WEB');
             endDelimiter: ;
 
         - sql:
@@ -41,8 +44,9 @@ databaseChangeLog:
                 u.id,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
-              FROM users u WHERE u.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+              FROM users u 
+              WHERE u.username = 'john'
+                AND NOT EXISTS (SELECT 1 FROM projects WHERE projects.key = 'MOBILE');
             endDelimiter: ;
 
         - sql:
@@ -55,8 +59,9 @@ databaseChangeLog:
                 u.id,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
-              FROM users u WHERE u.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+              FROM users u 
+              WHERE u.username = 'jane'
+                AND NOT EXISTS (SELECT 1 FROM projects WHERE projects.key = 'API');
             endDelimiter: ;
 
         # Добавление участников в проекты
@@ -66,7 +71,10 @@ databaseChangeLog:
               SELECT p.id, u.id
               FROM projects p, users u
               WHERE p.key = 'WEB' AND u.username IN ('john', 'jane', 'bob')
-              ON CONFLICT DO NOTHING;
+                AND NOT EXISTS (
+                  SELECT 1 FROM project_members pm 
+                  WHERE pm.project_id = p.id AND pm.user_id = u.id
+                );
             endDelimiter: ;
 
         - sql:
@@ -75,7 +83,10 @@ databaseChangeLog:
               SELECT p.id, u.id
               FROM projects p, users u
               WHERE p.key = 'MOBILE' AND u.username IN ('jane', 'bob')
-              ON CONFLICT DO NOTHING;
+                AND NOT EXISTS (
+                  SELECT 1 FROM project_members pm 
+                  WHERE pm.project_id = p.id AND pm.user_id = u.id
+                );
             endDelimiter: ;
 
         # Вставка тестовых задач для проекта WEB
@@ -100,7 +111,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-1');
             endDelimiter: ;
 
         - sql:
@@ -124,7 +135,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-2');
             endDelimiter: ;
 
         - sql:
@@ -148,7 +159,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-3');
             endDelimiter: ;
 
         - sql:
@@ -172,7 +183,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-4');
             endDelimiter: ;
 
         # Задачи для проекта MOBILE
@@ -197,7 +208,7 @@ databaseChangeLog:
               WHERE p.key = 'MOBILE' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'MOBILE-1');
             endDelimiter: ;
 
         - sql:
@@ -221,7 +232,7 @@ databaseChangeLog:
               WHERE p.key = 'MOBILE' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'MOBILE-2');
             endDelimiter: ;
 
         # Задачи для проекта API
@@ -246,7 +257,7 @@ databaseChangeLog:
               WHERE p.key = 'API' 
                 AND reporter.username = 'jane'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'API-1');
             endDelimiter: ;
 
         - sql:
@@ -270,7 +281,7 @@ databaseChangeLog:
               WHERE p.key = 'API' 
                 AND reporter.username = 'jane'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'API-2');
             endDelimiter: ;
 
         # Добавляем комментарии к задачам
@@ -286,7 +297,12 @@ databaseChangeLog:
               FROM tasks t
               CROSS JOIN users u
               WHERE t.key = 'WEB-1' AND u.username = 'john'
-              ON CONFLICT DO NOTHING;
+                AND NOT EXISTS (
+                  SELECT 1 FROM comments c 
+                  WHERE c.task_id = t.id 
+                    AND c.author_id = u.id 
+                    AND c.content = 'Начал работу над настройкой CI/CD. Создал базовый workflow файл.'
+                );
             endDelimiter: ;
 
         - sql:
@@ -301,7 +317,12 @@ databaseChangeLog:
               FROM tasks t
               CROSS JOIN users u
               WHERE t.key = 'WEB-2' AND u.username = 'jane'
-              ON CONFLICT DO NOTHING;
+                AND NOT EXISTS (
+                  SELECT 1 FROM comments c 
+                  WHERE c.task_id = t.id 
+                    AND c.author_id = u.id 
+                    AND c.content = 'Проблема воспроизводится на всех браузерах. Нужно проверить логи сервера.'
+                );
             endDelimiter: ;
 
         - sql:
@@ -316,6 +337,11 @@ databaseChangeLog:
               FROM tasks t
               CROSS JOIN users u
               WHERE t.key = 'WEB-3' AND u.username = 'bob'
-              ON CONFLICT DO NOTHING;
+                AND NOT EXISTS (
+                  SELECT 1 FROM comments c 
+                  WHERE c.task_id = t.id 
+                    AND c.author_id = u.id 
+                    AND c.content = 'Дизайн готов, жду ревью от команды.'
+                );
             endDelimiter: ;
 

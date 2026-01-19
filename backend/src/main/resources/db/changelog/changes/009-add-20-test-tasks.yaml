@@ -1,0 +1,485 @@
+databaseChangeLog:
+  - changeSet:
+      id: 009-add-20-test-tasks
+      author: task-manager
+      changes:
+        # Добавляем 20 тестовых задач для проекта WEB с разными статусами, приоритетами и типами
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Реализовать систему уведомлений',
+                'Добавить email и push уведомления для важных событий в системе',
+                'WEB-5',
+                'STORY',
+                'TODO',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить ошибку валидации форм',
+                'Формы не валидируют обязательные поля перед отправкой',
+                'WEB-6',
+                'BUG',
+                'IN_PROGRESS',
+                'CRITICAL',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить фильтры для списка задач',
+                'Реализовать фильтрацию задач по статусу, приоритету и исполнителю',
+                'WEB-7',
+                'TASK',
+                'IN_REVIEW',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Обновить зависимости проекта',
+                'Обновить все npm пакеты до последних версий и исправить уязвимости',
+                'WEB-8',
+                'TASK',
+                'DONE',
+                'LOW',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Создать компонент календаря',
+                'Разработать календарный вид для отображения задач с дедлайнами',
+                'WEB-9',
+                'EPIC',
+                'TODO',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить баг с загрузкой изображений',
+                'Изображения не загружаются при размере файла более 5MB',
+                'WEB-10',
+                'BUG',
+                'IN_PROGRESS',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'bob'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить экспорт данных в Excel',
+                'Реализовать функцию экспорта списка задач в формат Excel',
+                'WEB-11',
+                'STORY',
+                'IN_REVIEW',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Настроить мониторинг приложения',
+                'Интегрировать Sentry для отслеживания ошибок в production',
+                'WEB-12',
+                'TASK',
+                'DONE',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Реализовать поиск по задачам',
+                'Добавить полнотекстовый поиск с фильтрами и сортировкой',
+                'WEB-13',
+                'STORY',
+                'TODO',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить проблему с кэшированием',
+                'Кэш не обновляется после изменения данных, требуется перезагрузка страницы',
+                'WEB-14',
+                'BUG',
+                'IN_PROGRESS',
+                'CRITICAL',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить поддержку нескольких языков',
+                'Реализовать интернационализацию (i18n) для русского и английского языков',
+                'WEB-15',
+                'EPIC',
+                'IN_REVIEW',
+                'LOW',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Оптимизировать запросы к базе данных',
+                'Добавить индексы и оптимизировать медленные SQL запросы',
+                'WEB-16',
+                'TASK',
+                'DONE',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить систему комментариев',
+                'Реализовать возможность оставлять комментарии к задачам с упоминаниями пользователей',
+                'WEB-17',
+                'STORY',
+                'TODO',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'bob'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить баг с отображением дат',
+                'Даты отображаются в неправильном часовом поясе',
+                'WEB-18',
+                'BUG',
+                'IN_PROGRESS',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Создать дашборд с аналитикой',
+                'Разработать страницу с графиками и статистикой по проектам и задачам',
+                'WEB-19',
+                'EPIC',
+                'IN_REVIEW',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить валидацию на клиенте',
+                'Улучшить UX добавив валидацию форм на стороне клиента',
+                'WEB-20',
+                'TASK',
+                'DONE',
+                'LOW',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'john'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Реализовать drag-and-drop для задач',
+                'Добавить возможность перетаскивать задачи между колонками канбан-доски',
+                'WEB-21',
+                'STORY',
+                'TODO',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Исправить проблему с автозаполнением',
+                'Автозаполнение форм не работает в мобильных браузерах',
+                'WEB-22',
+                'BUG',
+                'IN_PROGRESS',
+                'MEDIUM',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'bob'
+                AND assignee.username = 'jane'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Добавить систему тегов',
+                'Реализовать возможность добавлять теги к задачам для лучшей организации',
+                'WEB-23',
+                'TASK',
+                'IN_REVIEW',
+                'LOW',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'jane'
+                AND assignee.username = 'bob'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;
+
+        - sql:
+            sql: |
+              INSERT INTO tasks (title, description, key, type, status, priority, project_id, reporter_id, assignee_id, created_at, updated_at)
+              SELECT 
+                'Настроить автоматическое тестирование',
+                'Добавить unit и integration тесты с покрытием не менее 80%',
+                'WEB-24',
+                'EPIC',
+                'DONE',
+                'HIGH',
+                p.id,
+                reporter.id,
+                assignee.id,
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+              FROM projects p
+              CROSS JOIN users reporter
+              CROSS JOIN users assignee
+              WHERE p.key = 'WEB' 
+                AND reporter.username = 'admin'
+                AND assignee.username = 'john'
+              ON CONFLICT (key) DO NOTHING;
+            endDelimiter: ;

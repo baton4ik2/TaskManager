@@ -15,4 +15,6 @@ databaseChangeLog:
       file: db/changelog/changes/007-add-oauth2-fields.yaml
   - include:
       file: db/changelog/changes/008-make-password-nullable.yaml
+  - include:
+      file: db/changelog/changes/009-add-20-test-tasks.yaml
 

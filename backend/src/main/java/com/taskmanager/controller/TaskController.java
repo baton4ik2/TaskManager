@@ -22,10 +22,10 @@ public class TaskController {
 
     @GetMapping
     public ResponseEntity<List<TaskDto>> getAllTasks(
-            @RequestParam(required = false) Long projectId,
+            @RequestParam(required = false) List<Long> projectIds,
             @RequestParam(required = false) Long assigneeId
     ) {
-        return ResponseEntity.ok(taskService.getAllTasks(projectId, assigneeId));
+        return ResponseEntity.ok(taskService.getAllTasks(projectIds, assigneeId));
     }
 
     @GetMapping("/{id}")

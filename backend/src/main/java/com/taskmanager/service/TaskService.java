@@ -23,10 +23,10 @@ public class TaskService {
     private final ProjectRepository projectRepository;
     private final UserRepository userRepository;
 
-    public List<TaskDto> getAllTasks(Long projectId, Long assigneeId) {
+    public List<TaskDto> getAllTasks(List<Long> projectIds, Long assigneeId) {
         List<Task> tasks;
-        if (projectId != null) {
-            tasks = taskRepository.findByProjectId(projectId);
+        if (projectIds != null && !projectIds.isEmpty()) {
+            tasks = taskRepository.findByProjectIdIn(projectIds);
         } else if (assigneeId != null) {
             tasks = taskRepository.findByAssigneeId(assigneeId);
         } else {

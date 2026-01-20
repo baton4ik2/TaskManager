@@ -11,6 +11,7 @@ import java.util.Optional;
 public interface TaskRepository extends JpaRepository<Task, Long> {
     Optional<Task> findByKey(String key);
     List<Task> findByProjectId(Long projectId);
+    List<Task> findByProjectIdIn(List<Long> projectIds);
     List<Task> findByAssigneeId(Long assigneeId);
     List<Task> findByReporterId(Long reporterId);
     List<Task> findByProjectIdAndStatus(Long projectId, Task.TaskStatus status);

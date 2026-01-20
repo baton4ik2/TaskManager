@@ -74,9 +74,11 @@ export const projectsApi = {
 }
 
 export const tasksApi = {
-  getAll: async (projectId?: number, assigneeId?: number) => {
+  getAll: async (projectIds?: number[], assigneeId?: number) => {
     const params = new URLSearchParams()
-    if (projectId) params.append('projectId', projectId.toString())
+    if (projectIds && projectIds.length > 0) {
+      projectIds.forEach(id => params.append('projectIds', id.toString()))
+    }
     if (assigneeId) params.append('assigneeId', assigneeId.toString())
     const response = await api.get(`/tasks?${params.toString()}`)
     return response.data

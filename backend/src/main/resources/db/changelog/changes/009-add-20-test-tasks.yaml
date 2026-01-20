@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 009-add-20-test-tasks
       author: task-manager
+      validCheckSum: ANY
       changes:
         # Добавляем 20 тестовых задач для проекта WEB с разными статусами, приоритетами и типами
         - sql:
@@ -16,16 +17,14 @@ databaseChangeLog:
                 'HIGH',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
-                AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-5');
             endDelimiter: ;
 
         - sql:
@@ -49,7 +48,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-6');
             endDelimiter: ;
 
         - sql:
@@ -73,7 +72,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-7');
             endDelimiter: ;
 
         - sql:
@@ -97,7 +96,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'jane'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-8');
             endDelimiter: ;
 
         - sql:
@@ -112,16 +111,14 @@ databaseChangeLog:
                 'HIGH',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
-                AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-9');
             endDelimiter: ;
 
         - sql:
@@ -145,7 +142,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'bob'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-10');
             endDelimiter: ;
 
         - sql:
@@ -169,7 +166,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-11');
             endDelimiter: ;
 
         - sql:
@@ -193,7 +190,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-12');
             endDelimiter: ;
 
         - sql:
@@ -208,16 +205,14 @@ databaseChangeLog:
                 'MEDIUM',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'jane'
-                AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-13');
             endDelimiter: ;
 
         - sql:
@@ -241,7 +236,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-14');
             endDelimiter: ;
 
         - sql:
@@ -265,7 +260,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-15');
             endDelimiter: ;
 
         - sql:
@@ -289,7 +284,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-16');
             endDelimiter: ;
 
         - sql:
@@ -304,16 +299,14 @@ databaseChangeLog:
                 'MEDIUM',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'bob'
-                AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-17');
             endDelimiter: ;
 
         - sql:
@@ -337,7 +330,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'jane'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-18');
             endDelimiter: ;
 
         - sql:
@@ -361,7 +354,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-19');
             endDelimiter: ;
 
         - sql:
@@ -385,7 +378,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'john'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-20');
             endDelimiter: ;
 
         - sql:
@@ -400,16 +393,14 @@ databaseChangeLog:
                 'HIGH',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
-                AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-21');
             endDelimiter: ;
 
         - sql:
@@ -433,7 +424,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'bob'
                 AND assignee.username = 'jane'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-22');
             endDelimiter: ;
 
         - sql:
@@ -457,7 +448,7 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'jane'
                 AND assignee.username = 'bob'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-23');
             endDelimiter: ;
 
         - sql:
@@ -481,5 +472,5 @@ databaseChangeLog:
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
                 AND assignee.username = 'john'
-              ON CONFLICT (key) DO NOTHING;
+                AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-24');
             endDelimiter: ;

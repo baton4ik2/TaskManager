@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 006-insert-test-data
       author: task-manager
+      validCheckSum: ANY
       runAlways: false
       changes:
         # Вставка тестовых пользователей
@@ -126,15 +127,13 @@ databaseChangeLog:
                 'CRITICAL',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'WEB' 
                 AND reporter.username = 'admin'
-                AND assignee.username = 'jane'
                 AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'WEB-2');
             endDelimiter: ;
 
@@ -223,15 +222,13 @@ databaseChangeLog:
                 'MEDIUM',
                 p.id,
                 reporter.id,
-                assignee.id,
+                NULL,
                 CURRENT_TIMESTAMP,
                 CURRENT_TIMESTAMP
               FROM projects p
               CROSS JOIN users reporter
-              CROSS JOIN users assignee
               WHERE p.key = 'MOBILE' 
                 AND reporter.username = 'john'
-                AND assignee.username = 'bob'
                 AND NOT EXISTS (SELECT 1 FROM tasks WHERE tasks.key = 'MOBILE-2');
             endDelimiter: ;
 

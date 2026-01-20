@@ -4,12 +4,15 @@ import com.taskmanager.dto.TaskDto;
 import com.taskmanager.service.TaskService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/tasks")
 @RequiredArgsConstructor
@@ -36,8 +39,21 @@ public class TaskController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<TaskDto> updateTask(@PathVariable Long id, @Valid @RequestBody TaskDto taskDto) {
-        return ResponseEntity.ok(taskService.updateTask(id, taskDto));
+    public ResponseEntity<TaskDto> updateTask(@PathVariable Long id, @Valid @RequestBody TaskDto taskDto, Authentication authentication) {
+        String username;
+        
+        // Для OAuth2 пользователей получаем username из UserDetails
+        if (authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            username = userDetails.getUsername();
+        } else {
+            username = authentication.getName();
+        }
+        
+        log.info("UpdateTask - TaskID: {}, NewStatus: {}, User: {}, AuthType: {}", 
+            id, taskDto.getStatus(), username, authentication.getClass().getSimpleName());
+        
+        return ResponseEntity.ok(taskService.updateTask(id, taskDto, username));
     }
 
     @DeleteMapping("/{id}")

@@ -8,12 +8,14 @@ import com.taskmanager.repository.ProjectRepository;
 import com.taskmanager.repository.TaskRepository;
 import com.taskmanager.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TaskService {
@@ -71,22 +73,43 @@ public class TaskService {
     }
 
     @Transactional
-    public TaskDto updateTask(Long id, TaskDto taskDto) {
+    public TaskDto updateTask(Long id, TaskDto taskDto, String username) {
         Task task = taskRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Task not found"));
 
         if (taskDto.getTitle() != null) task.setTitle(taskDto.getTitle());
         if (taskDto.getDescription() != null) task.setDescription(taskDto.getDescription());
         if (taskDto.getType() != null) task.setType(taskDto.getType());
-        if (taskDto.getStatus() != null) task.setStatus(taskDto.getStatus());
         if (taskDto.getPriority() != null) task.setPriority(taskDto.getPriority());
 
+        // Обработка изменения статуса
+        if (taskDto.getStatus() != null) {
+            Task.TaskStatus newStatus = taskDto.getStatus();
+            task.setStatus(newStatus);
+
+            // Если статус меняется на IN_PROGRESS и у задачи нет исполнителя, назначаем текущего пользователя
+            if (newStatus == Task.TaskStatus.IN_PROGRESS && task.getAssignee() == null) {
+                log.info("TaskService.updateTask - Assigning task to user: {}", username);
+                User currentUser = userRepository.findByUsername(username)
+                        .orElseGet(() -> {
+                            log.info("User not found by username, trying by email: {}", username);
+                            return userRepository.findByEmail(username)
+                                    .orElseThrow(() -> new RuntimeException("User not found with username/email: " + username));
+                        });
+                log.info("TaskService.updateTask - Found user: ID={}, Username={}", currentUser.getId(), currentUser.getUsername());
+                task.setAssignee(currentUser);
+            }
+            // Если статус меняется на TODO, убираем исполнителя
+            else if (newStatus == Task.TaskStatus.TODO) {
+                task.setAssignee(null);
+            }
+        }
+
+        // Если assigneeId явно указан в DTO, используем его (для ручного назначения)
         if (taskDto.getAssigneeId() != null) {
             User assignee = userRepository.findById(taskDto.getAssigneeId())
                     .orElseThrow(() -> new RuntimeException("Assignee not found"));
             task.setAssignee(assignee);
-        } else {
-            task.setAssignee(null);
         }
 
         task = taskRepository.save(task);

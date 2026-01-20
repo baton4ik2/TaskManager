@@ -53,6 +53,7 @@ public class ProjectService {
 
         if (projectDto.getName() != null) project.setName(projectDto.getName());
         if (projectDto.getDescription() != null) project.setDescription(projectDto.getDescription());
+        if (projectDto.getKey() != null) project.setKey(projectDto.getKey().toUpperCase());
 
         project = projectRepository.save(project);
         return toDto(project);

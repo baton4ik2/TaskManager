@@ -76,13 +76,21 @@ function TaskCard({ task, onTaskClick }: TaskCardProps) {
     opacity: isDragging ? 0.5 : 1,
   }
 
+  const handlePointerUp = (e: React.PointerEvent) => {
+    // Если мы не перетаскивали (isDragging ложно, но dnd-kit уже мог начать захват)
+    // dnd-kit PointerSensor с activationConstraint должен позволять клики
+    if (!isDragging) {
+      onTaskClick?.(task.id)
+    }
+  }
+
   const cardStyle = {
     ...style,
     padding: '12px',
     background: '#fff',
     borderRadius: '8px',
     marginBottom: '8px',
-    cursor: 'grab',
+    cursor: 'pointer',
     boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
     border: `1px solid ${statusColors[task.status]}`,
     borderLeft: `4px solid ${statusColors[task.status]}`,
@@ -95,7 +103,11 @@ function TaskCard({ task, onTaskClick }: TaskCardProps) {
       style={cardStyle}
       {...attributes}
       {...listeners}
-      onClick={() => onTaskClick?.(task.id)}
+      onClick={() => {
+        if (!isDragging) {
+          onTaskClick?.(task.id)
+        }
+      }}
       className="kanban-task-card"
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)'
@@ -226,7 +238,11 @@ function KanbanColumn({ id, title, tasks, onTaskClick }: KanbanColumnProps) {
 export function KanbanBoard({ tasks, onTaskMove, onTaskClick }: KanbanBoardProps) {
   const [activeId, setActiveId] = React.useState<string | null>(null)
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Перетаскивание начнется только после сдвига на 8 пикселей
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })

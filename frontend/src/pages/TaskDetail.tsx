@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useParams, useNavigate } from 'react-router-dom'
-import { tasksApi } from '../services/api'
+import { tasksApi, usersApi } from '../services/api'
 import { useAuth } from '../contexts/AuthContext'
 import { useState, useEffect } from 'react'
 import { Task } from '../types/task'
@@ -17,12 +17,19 @@ function TaskDetail() {
     description: '',
     status: '',
     priority: '',
+    type: '',
+    assigneeId: null as number | null,
   })
 
-  const { data: task, isLoading } = useQuery<Task>({
+  const { data: task, isLoading: isTaskLoading } = useQuery<Task>({
     queryKey: ['task', id],
     queryFn: () => tasksApi.getById(Number(id)),
     enabled: !!id,
+  })
+
+  const { data: users } = useQuery<any[]>({
+    queryKey: ['users'],
+    queryFn: () => usersApi.getAll(),
   })
 
   useEffect(() => {
@@ -32,6 +39,8 @@ function TaskDetail() {
         description: task.description || '',
         status: task.status,
         priority: task.priority,
+        type: task.type,
+        assigneeId: task.assigneeId || null,
       })
     }
   }, [task])
@@ -48,7 +57,8 @@ function TaskDetail() {
   const deleteMutation = useMutation({
     mutationFn: () => tasksApi.delete(Number(id)),
     onSuccess: () => {
-      navigate(-1)
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      navigate('/')
     },
   })
 
@@ -57,20 +67,35 @@ function TaskDetail() {
     updateMutation.mutate(formData)
   }
 
-  if (isLoading) return <div>Загрузка...</div>
-  if (!task) return <div>Задача не найдена</div>
+  if (isTaskLoading) return <div className="container" style={{ padding: '40px', textAlign: 'center' }}>Загрузка...</div>
+  if (!task) return <div className="container" style={{ padding: '40px', textAlign: 'center' }}>Задача не найдена</div>
+
+  const statusLabels: Record<string, string> = {
+    TODO: 'К выполнению',
+    IN_PROGRESS: 'В работе',
+    IN_REVIEW: 'На проверке',
+    DONE: 'Выполнено',
+  }
+
+  const priorityColors: Record<string, string> = {
+    LOW: '#6b778c',
+    MEDIUM: '#0052cc',
+    HIGH: '#ff5630',
+    CRITICAL: '#de350b',
+  }
 
   return (
     <div className="app">
       <nav style={{
-        background: '#0052cc',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
         color: 'white',
         padding: '15px 20px',
         display: 'flex',
         justifyContent: 'space-between',
-        alignItems: 'center'
+        alignItems: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
       }}>
-        <h1 style={{ margin: 0 }}>{task.key}</h1>
+        <h1 style={{ margin: 0, fontSize: '20px' }}>{task.key}: {task.title}</h1>
         <div style={{ display: 'flex', gap: '15px' }}>
           <button className="btn btn-secondary" onClick={() => navigate(-1)}>
             Назад
@@ -80,8 +105,8 @@ function TaskDetail() {
           </button>
         </div>
       </nav>
-      <div className="container">
-        <div className="card">
+      <div className="container" style={{ marginTop: '20px' }}>
+        <div className="card" style={{ padding: '30px' }}>
           {isEditing ? (
             <form onSubmit={handleUpdate}>
               <div className="form-group">
@@ -101,33 +126,59 @@ function TaskDetail() {
                   rows={5}
                 />
               </div>
-              <div className="form-group">
-                <label>Статус</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                >
-                  <option value="TODO">TODO</option>
-                  <option value="IN_PROGRESS">IN_PROGRESS</option>
-                  <option value="IN_REVIEW">IN_REVIEW</option>
-                  <option value="DONE">DONE</option>
-                </select>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                <div className="form-group">
+                  <label>Тип</label>
+                  <select
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  >
+                    <option value="TASK">Задача</option>
+                    <option value="BUG">Ошибка</option>
+                    <option value="STORY">История</option>
+                    <option value="EPIC">Эпик</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Приоритет</label>
+                  <select
+                    value={formData.priority}
+                    onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  >
+                    <option value="LOW">Низкий</option>
+                    <option value="MEDIUM">Средний</option>
+                    <option value="HIGH">Высокий</option>
+                    <option value="CRITICAL">Критический</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Статус</label>
+                  <select
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  >
+                    <option value="TODO">К выполнению</option>
+                    <option value="IN_PROGRESS">В работе</option>
+                    <option value="IN_REVIEW">На проверке</option>
+                    <option value="DONE">Выполнено</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Исполнитель</label>
+                  <select
+                    value={formData.assigneeId || ''}
+                    onChange={(e) => setFormData({ ...formData, assigneeId: e.target.value ? Number(e.target.value) : null })}
+                  >
+                    <option value="">Без исполнителя</option>
+                    {users?.map(u => (
+                      <option key={u.id} value={u.id}>{u.username}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
-              <div className="form-group">
-                <label>Приоритет</label>
-                <select
-                  value={formData.priority}
-                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
-                >
-                  <option value="LOW">LOW</option>
-                  <option value="MEDIUM">MEDIUM</option>
-                  <option value="HIGH">HIGH</option>
-                  <option value="CRITICAL">CRITICAL</option>
-                </select>
-              </div>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button type="submit" className="btn btn-primary">
-                  Сохранить
+              <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                <button type="submit" className="btn btn-primary" disabled={updateMutation.isPending}>
+                  {updateMutation.isPending ? 'Сохранение...' : 'Сохранить'}
                 </button>
                 <button
                   type="button"
@@ -140,63 +191,92 @@ function TaskDetail() {
             </form>
           ) : (
             <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '20px' }}>
-                <div>
-                  <h2 style={{ marginBottom: '10px' }}>{task.title}</h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '30px' }}>
+                <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', gap: '10px', marginBottom: '15px' }}>
                     <span style={{
-                      padding: '4px 8px',
+                      padding: '4px 12px',
                       background: '#dfe1e6',
-                      borderRadius: '4px',
-                      fontSize: '12px'
+                      color: '#42526e',
+                      borderRadius: '15px',
+                      fontSize: '12px',
+                      fontWeight: '600'
                     }}>
-                      {task.status}
+                      {task.type}
                     </span>
                     <span style={{
-                      padding: '4px 8px',
-                      background: '#dfe1e6',
-                      borderRadius: '4px',
-                      fontSize: '12px'
+                      padding: '4px 12px',
+                      background: priorityColors[task.priority],
+                      color: 'white',
+                      borderRadius: '15px',
+                      fontSize: '12px',
+                      fontWeight: '600'
                     }}>
                       {task.priority}
                     </span>
                     <span style={{
-                      padding: '4px 8px',
-                      background: '#dfe1e6',
-                      borderRadius: '4px',
-                      fontSize: '12px'
+                      padding: '4px 12px',
+                      background: '#36b37e',
+                      color: 'white',
+                      borderRadius: '15px',
+                      fontSize: '12px',
+                      fontWeight: '600'
                     }}>
-                      {task.type}
+                      {statusLabels[task.status]}
                     </span>
                   </div>
+                  <h2 style={{ fontSize: '28px', marginBottom: '10px' }}>{task.title}</h2>
                 </div>
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button className="btn btn-primary" onClick={() => setIsEditing(true)}>
                     Редактировать
                   </button>
-                  <button className="btn btn-danger" onClick={() => deleteMutation.mutate()}>
+                  <button 
+                    className="btn btn-danger" 
+                    onClick={() => window.confirm('Удалить эту задачу?') && deleteMutation.mutate()}
+                    disabled={deleteMutation.isPending}
+                  >
                     Удалить
                   </button>
                 </div>
               </div>
-              <div style={{ marginBottom: '20px' }}>
-                <h3 style={{ marginBottom: '10px' }}>Описание</h3>
-                <p style={{ color: '#6b778c', whiteSpace: 'pre-wrap' }}>
-                  {task.description || 'Нет описания'}
-                </p>
-              </div>
-              <div>
-                <p style={{ color: '#6b778c', fontSize: '14px' }}>
-                  <strong>Проект:</strong> {task.projectName}
-                </p>
-                <p style={{ color: '#6b778c', fontSize: '14px' }}>
-                  <strong>Создал:</strong> {task.reporterUsername}
-                </p>
-                {task.assigneeUsername && (
-                  <p style={{ color: '#6b778c', fontSize: '14px' }}>
-                    <strong>Исполнитель:</strong> {task.assigneeUsername}
-                  </p>
-                )}
+
+              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '40px' }}>
+                <div>
+                  <h3 style={{ fontSize: '18px', marginBottom: '15px', borderBottom: '1px solid #dfe1e6', paddingBottom: '10px' }}>
+                    Описание
+                  </h3>
+                  <div style={{ color: '#172b4d', whiteSpace: 'pre-wrap', lineHeight: '1.6' }}>
+                    {task.description || <em style={{ color: '#6b778c' }}>Нет описания</em>}
+                  </div>
+                </div>
+                <div style={{ background: '#f4f5f7', padding: '20px', borderRadius: '8px' }}>
+                  <h3 style={{ fontSize: '16px', marginBottom: '15px' }}>Детали</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#6b778c', display: 'block', marginBottom: '4px' }}>Проект</label>
+                      <span style={{ fontWeight: '500' }}>{task.projectName}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#6b778c', display: 'block', marginBottom: '4px' }}>Автор</label>
+                      <span style={{ fontWeight: '500' }}>👤 {task.reporterUsername}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#6b778c', display: 'block', marginBottom: '4px' }}>Исполнитель</label>
+                      <span style={{ fontWeight: '500' }}>
+                        {task.assigneeUsername ? `👤 ${task.assigneeUsername}` : <em style={{ color: '#6b778c' }}>Не назначен</em>}
+                      </span>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#6b778c', display: 'block', marginBottom: '4px' }}>Создана</label>
+                      <span style={{ fontSize: '13px' }}>{new Date(task.createdAt).toLocaleString()}</span>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: '12px', color: '#6b778c', display: 'block', marginBottom: '4px' }}>Обновлена</label>
+                      <span style={{ fontSize: '13px' }}>{new Date(task.updatedAt).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </>
           )}

@@ -11,6 +11,7 @@ function Projects() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [showCreateForm, setShowCreateForm] = useState(false)
+  const [editingProject, setEditingProject] = useState<any>(null)
   const [formData, setFormData] = useState({ name: '', description: '', key: '' })
 
   const { data: projects, isLoading } = useQuery({
@@ -27,9 +28,43 @@ function Projects() {
     },
   })
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => projectsApi.update(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+      setEditingProject(null)
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: projectsApi.delete,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
     createMutation.mutate(formData)
+  }
+
+  const handleUpdate = (e: React.FormEvent) => {
+    e.preventDefault()
+    updateMutation.mutate({ 
+      id: editingProject.id, 
+      data: { 
+        name: editingProject.name, 
+        description: editingProject.description,
+        key: editingProject.key
+      } 
+    })
+  }
+
+  const handleDelete = (e: React.MouseEvent, id: number, name: string) => {
+    e.stopPropagation()
+    if (window.confirm(`Вы уверены, что хотите удалить проект "${name}"? Все задачи проекта также будут удалены.`)) {
+      deleteMutation.mutate(id)
+    }
   }
 
   return (
@@ -58,8 +93,11 @@ function Projects() {
       </nav>
       <div className="container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2>Проекты</h2>
-          <button className="btn btn-primary" onClick={() => setShowCreateForm(!showCreateForm)}>
+          <h2 style={{ margin: 0 }}>Проекты</h2>
+          <button className="btn btn-primary" onClick={() => {
+            setShowCreateForm(!showCreateForm)
+            setEditingProject(null)
+          }}>
             {showCreateForm ? 'Отмена' : 'Создать проект'}
           </button>
         </div>
@@ -102,6 +140,49 @@ function Projects() {
           </div>
         )}
 
+        {editingProject && (
+          <div className="card" style={{ marginBottom: '20px' }}>
+            <h3 style={{ marginBottom: '15px' }}>Редактирование: {editingProject.key}</h3>
+            <form onSubmit={handleUpdate}>
+              <div className="form-group">
+                <label>Ключ проекта</label>
+                <input
+                  type="text"
+                  value={editingProject.key}
+                  onChange={(e) => setEditingProject({ ...editingProject, key: e.target.value.toUpperCase() })}
+                  required
+                  maxLength={10}
+                />
+              </div>
+              <div className="form-group">
+                <label>Название</label>
+                <input
+                  type="text"
+                  value={editingProject.name}
+                  onChange={(e) => setEditingProject({ ...editingProject, name: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Описание</label>
+                <textarea
+                  value={editingProject.description}
+                  onChange={(e) => setEditingProject({ ...editingProject, description: e.target.value })}
+                  rows={3}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button type="submit" className="btn btn-primary">
+                  Сохранить
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => setEditingProject(null)}>
+                  Отмена
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
         {isLoading ? (
           <div>Загрузка...</div>
         ) : (
@@ -112,16 +193,41 @@ function Projects() {
                   <div
                     key={project.id}
                     className="card"
-                    style={{ cursor: 'pointer' }}
+                    style={{ cursor: 'pointer', transition: 'all 0.2s' }}
                     onClick={() => navigate(`/projects/${project.id}`)}
+                    onMouseEnter={(e) => e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'}
+                    onMouseLeave={(e) => e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.05)'}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                      <div>
-                        <h3 style={{ marginBottom: '10px' }}>{project.key}: {project.name}</h3>
+                      <div style={{ flex: 1 }}>
+                        <h3 style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ background: '#dfe1e6', padding: '2px 8px', borderRadius: '4px', fontSize: '14px' }}>
+                            {project.key}
+                          </span>
+                          {project.name}
+                        </h3>
                         <p style={{ color: '#6b778c' }}>{project.description}</p>
-                        <p style={{ color: '#6b778c', fontSize: '12px', marginTop: '10px' }}>
-                          Владелец: {project.ownerUsername}
-                        </p>
+                        <div style={{ display: 'flex', gap: '20px', marginTop: '15px', fontSize: '12px', color: '#6b778c' }}>
+                          <span>👤 Владелец: {project.ownerUsername}</span>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button 
+                          className="btn btn-secondary btn-sm" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingProject(project);
+                            setShowCreateForm(false);
+                          }}
+                        >
+                          Изменить
+                        </button>
+                        <button 
+                          className="btn btn-danger btn-sm" 
+                          onClick={(e) => handleDelete(e, project.id, project.name)}
+                        >
+                          Удалить
+                        </button>
                       </div>
                     </div>
                   </div>

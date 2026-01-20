@@ -51,6 +51,13 @@ export const authApi = {
   },
 }
 
+export const usersApi = {
+  getAll: async () => {
+    const response = await api.get('/users')
+    return response.data
+  },
+}
+
 export const projectsApi = {
   getAll: async () => {
     const response = await api.get('/projects')
